@@ -1,0 +1,270 @@
+#include <stdio.h>
+#include <stdlib.h>
+#include <string.h>
+
+#define TOTAL_SEATS 20
+
+struct Passenger
+{
+    int seatNo;
+    char name[50];
+    char passport[20];
+    char boarding[50];
+    char destination[50];
+};
+
+struct Passenger passenger[TOTAL_SEATS];
+
+void loadData();
+void saveData();
+void displaySeats();
+void bookSeat();
+void cancelReservation();
+void generateTicket();
+
+int main()
+{
+    int choice;
+
+    loadData();
+
+    while(1)
+    {
+        printf("\n=================================");
+        printf("\n   AIRLINE RESERVATION SYSTEM");
+        printf("\n=================================");
+
+        printf("\n1. Display Seat Layout");
+        printf("\n2. Book Seat");
+        printf("\n3. Cancel Reservation");
+        printf("\n4. Generate Ticket");
+        printf("\n5. Exit");
+
+        printf("\n\nEnter Choice: ");
+        scanf("%d",&choice);
+
+        switch(choice)
+        {
+            case 1:
+                displaySeats();
+                break;
+
+            case 2:
+                bookSeat();
+                break;
+
+            case 3:
+                cancelReservation();
+                break;
+
+            case 4:
+                generateTicket();
+                break;
+
+            case 5:
+                saveData();
+                printf("\nData Saved Successfully");
+                printf("\nThank You\n");
+                exit(0);
+
+            default:
+                printf("\nInvalid Choice\n");
+        }
+    }
+
+    return 0;
+}
+
+void loadData()
+{
+    FILE *fp;
+
+    fp=fopen("airline.dat","rb");
+
+    if(fp==NULL)
+    {
+        for(int i=0;i<TOTAL_SEATS;i++)
+        {
+            passenger[i].seatNo=0;
+            strcpy(passenger[i].name,"");
+            strcpy(passenger[i].passport,"");
+            strcpy(passenger[i].boarding,"");
+            strcpy(passenger[i].destination,"");
+        }
+        return;
+    }
+
+    fread(passenger,sizeof(passenger),1,fp);
+
+    fclose(fp);
+}
+
+void saveData()
+{
+    FILE *fp;
+
+    fp=fopen("airline.dat","wb");
+
+    fwrite(passenger,sizeof(passenger),1,fp);
+
+    fclose(fp);
+}
+
+void displaySeats()
+{
+    int count=1;
+
+    printf("\n========= SEAT LAYOUT =========\n");
+
+    for(int i=0;i<5;i++)
+    {
+        for(int j=0;j<4;j++)
+        {
+            if(passenger[count-1].seatNo==0)
+                printf("[%2d] ",count);
+            else
+                printf("[XX] ");
+
+            count++;
+        }
+
+        printf("\n");
+    }
+
+    printf("\nXX = Reserved\n");
+}
+
+void bookSeat()
+{
+    int n,seat;
+
+    displaySeats();
+
+    printf("\nEnter Number of Passengers: ");
+    scanf("%d",&n);
+
+    if(n<=0)
+    {
+        printf("Invalid Number\n");
+        return;
+    }
+
+    for(int i=0;i<n;i++)
+    {
+        printf("\n====== Passenger %d ======\n",i+1);
+
+        printf("Enter Seat Number: ");
+        scanf("%d",&seat);
+
+        if(seat<1 || seat>TOTAL_SEATS)
+        {
+            printf("Invalid Seat Number\n");
+            i--;
+            continue;
+        }
+
+        if(passenger[seat-1].seatNo!=0)
+        {
+            printf("Seat already booked\n");
+            i--;
+            continue;
+        }
+
+        passenger[seat-1].seatNo=seat;
+
+        printf("Enter Passenger Name: ");
+        scanf(" %[^\n]",passenger[seat-1].name);
+
+        printf("Enter Passport Number: ");
+        scanf("%s",passenger[seat-1].passport);
+
+        printf("Enter Boarding Airport: ");
+        scanf(" %[^\n]",passenger[seat-1].boarding);
+
+        printf("Enter Destination Airport: ");
+        scanf(" %[^\n]",passenger[seat-1].destination);
+
+        printf("Seat Reserved Successfully\n");
+    }
+
+    saveData();
+}
+
+void cancelReservation()
+{
+    int seat;
+
+    printf("\nEnter Seat Number: ");
+    scanf("%d",&seat);
+
+    if(seat<1 || seat>TOTAL_SEATS)
+    {
+        printf("Invalid Seat Number\n");
+        return;
+    }
+
+    if(passenger[seat-1].seatNo==0)
+    {
+        printf("Seat not reserved\n");
+        return;
+    }
+
+    printf("\nPassenger: %s",
+            passenger[seat-1].name);
+
+    passenger[seat-1].seatNo=0;
+
+    strcpy(passenger[seat-1].name,"");
+    strcpy(passenger[seat-1].passport,"");
+    strcpy(passenger[seat-1].boarding,"");
+    strcpy(passenger[seat-1].destination,"");
+
+    saveData();
+
+    printf("\nReservation Cancelled Successfully\n");
+}
+
+void generateTicket()
+{
+    int seat;
+
+    printf("\nEnter Seat Number: ");
+    scanf("%d",&seat);
+
+    if(seat<1 || seat>TOTAL_SEATS)
+    {
+        printf("Invalid Seat Number\n");
+        return;
+    }
+
+    if(passenger[seat-1].seatNo==0)
+    {
+        printf("No Reservation Found\n");
+        return;
+    }
+
+    printf("\n================================");
+    printf("\n        AIRLINE TICKET");
+    printf("\n================================");
+
+    printf("\nPassenger Name : %s",
+            passenger[seat-1].name);
+
+    printf("\nPassport No    : %s",
+            passenger[seat-1].passport);
+
+    printf("\nSeat Number    : %d",
+            passenger[seat-1].seatNo);
+
+    printf("\nBoarding From  : %s",
+            passenger[seat-1].boarding);
+
+    printf("\nDestination    : %s",
+            passenger[seat-1].destination);
+
+    printf("\nFlight Number  : AI202");
+
+    printf("\nStatus         : Confirmed");
+
+    printf("\n================================\n");
+}
